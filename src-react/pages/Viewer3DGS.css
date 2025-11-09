@@ -1,0 +1,232 @@
+.viewer-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.viewer-title {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 0;
+  font-family: "Open Sans", Arial, sans-serif;
+  color: var(--text);
+}
+
+.viewer-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.viewer-panel {
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: "Open Sans", Arial, sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-width: 320px;
+  flex: 0 1 400px;
+}
+
+.viewer-small-title {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.viewer-file-ext {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--inputBg);
+  padding: 3px 8px;
+  margin: 0 2px;
+  font-size: 12px;
+}
+
+.viewer-file-ext-small {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--inputBg);
+  padding: 2px 6px;
+  margin: 0 2px;
+  font-size: 11px;
+}
+
+.viewer-button {
+  color: var(--white);
+  border: none;
+  background-color: var(--metroBlue);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.viewer-button:hover {
+  opacity: 0.9;
+}
+
+.viewer-button-secondary {
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.viewer-text-input {
+  border: 1px solid var(--border);
+  background-color: var(--inputBg);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+.viewer-text-input:focus {
+  outline: none;
+  border-color: var(--metroBlue);
+}
+
+.viewer-checkbox {
+  width: 18px;
+  height: 18px;
+  padding: 0px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.viewer-valid-label {
+  color: var(--gray);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.viewer-loading-icon {
+  width: 35px;
+  padding: 15px;
+  background: var(--metroBlue);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  --_m: conic-gradient(#0000, #000), linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+  mask: var(--_m);
+  -webkit-mask-composite: source-out;
+  mask-composite: subtract;
+  box-sizing: border-box;
+  animation: viewer-load 1s linear infinite;
+}
+
+@keyframes viewer-load {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.viewer-control-key {
+  font-weight: 700;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: var(--inputBg);
+  border-radius: 6px;
+  min-width: 32px;
+  text-align: center;
+  font-size: 13px;
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+.viewer-control-desc {
+  text-align: left;
+  padding-left: 12px;
+  color: var(--gray);
+  font-size: 13px;
+  font-family: "Open Sans", Arial, sans-serif;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table tr {
+  height: 36px;
+}
+
+table td {
+  padding: 4px 0;
+}
+
+.viewer-exit-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10000;
+  background: rgba(0, 20, 137, 0.9);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  user-select: none;
+}
+
+.viewer-exit-button:hover {
+  background: rgba(0, 20, 137, 1);
+  transform: translateY(-1px);
+}
+
+.viewer-exit-button:active {
+  transform: translateY(0);
+}
+
+/* When viewer is active, button stays on top */
+.viewer-wrap[style*="display: none"] ~ .viewer-exit-button,
+body:has(.viewer-wrap[style*="display: none"]) .viewer-exit-button,
+body > .viewer-exit-button {
+  z-index: 99999;
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .viewer-content {
+    flex-direction: column;
+  }
+  .viewer-title {
+    font-size: 32px;
+  }
+  .viewer-panel {
+    width: 100%;
+  }
+  
+  .viewer-exit-button {
+    top: 12px;
+    left: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
