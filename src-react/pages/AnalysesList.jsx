@@ -36,70 +36,53 @@ function AnalysesList() {
     return analysis.status === filter;
   });
 
+  const tabs = [
+    { id: 'all', label: 'Todas' },
+    { id: 'pending', label: 'Pendentes' },
+    { id: 'processing', label: 'Processando' },
+    { id: 'completed', label: 'Concluídas' },
+    { id: 'failed', label: 'Falhas' }
+  ];
+
   return (
-    <div className="analyses-list-wrap">
-      <div className="analyses-list-header">
-        <button className="analyses-list-back-btn" onClick={() => navigate('/')}>
-          ← Voltar
+    <div className="analyses-wrap">
+      <div className="analyses-header">
+        <button className="btn-back-link" onClick={() => navigate('/')}>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          Voltar
         </button>
         <ThemeToggle />
       </div>
 
-      <div className="analyses-list-content">
-        <div className="analyses-list-title-section">
-          <h1 className="analyses-list-title">Análises</h1>
-          <button className="analyses-list-refresh-btn" onClick={loadAnalyses} disabled={loading}>
-            🔄 Atualizar
-          </button>
-        </div>
-
-        <div className="analyses-list-filters">
-          <button
-            className={`analyses-list-filter-btn ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            Todas
-          </button>
-          <button
-            className={`analyses-list-filter-btn ${filter === 'pending' ? 'active' : ''}`}
-            onClick={() => setFilter('pending')}
-          >
-            Pendentes
-          </button>
-          <button
-            className={`analyses-list-filter-btn ${filter === 'processing' ? 'active' : ''}`}
-            onClick={() => setFilter('processing')}
-          >
-            Processando
-          </button>
-          <button
-            className={`analyses-list-filter-btn ${filter === 'completed' ? 'active' : ''}`}
-            onClick={() => setFilter('completed')}
-          >
-            Concluídas
-          </button>
-          <button
-            className={`analyses-list-filter-btn ${filter === 'failed' ? 'active' : ''}`}
-            onClick={() => setFilter('failed')}
-          >
-            Falhadas
+      <div className="analyses-container">
+        <div className="analyses-controls">
+          <h1 className="page-title">Monitoramento de Análises</h1>
+          <div className="filter-tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`tab-btn ${filter === tab.id ? 'active' : ''}`}
+                onClick={() => setFilter(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <button className="btn-submit" style={{width: 'auto', padding: '8px 16px'}} onClick={loadAnalyses}>
+            Atualizar
           </button>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
         {loading ? (
-          <LoadingSpinner message="Carregando análises..." />
+          <LoadingSpinner message="Buscando dados..." />
         ) : filteredAnalyses.length === 0 ? (
-          <div className="analyses-list-empty">
-            <p>
-              {filter === 'all'
-                ? 'Nenhuma análise cadastrada ainda.'
-                : `Nenhuma análise com status "${filter}".`}
-            </p>
+          <div className="empty-placeholder">
+            <p>Nenhuma análise encontrada com o filtro "{tabs.find(t => t.id === filter)?.label}".</p>
           </div>
         ) : (
-          <div className="analyses-list-grid">
+          <div className="analyses-grid">
             {filteredAnalyses.map((analysis) => (
               <AnalysisCard key={analysis.id} analysis={analysis} />
             ))}
@@ -111,4 +94,3 @@ function AnalysesList() {
 }
 
 export default AnalysesList;
-

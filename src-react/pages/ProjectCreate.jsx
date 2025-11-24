@@ -20,7 +20,6 @@ function ProjectCreate() {
   };
 
   const getBimFile = () => {
-    // Retorna o arquivo principal (.obj, .ply, .ifc, .dwg) ou o primeiro arquivo
     const objFile = bimFiles.find(f => f.name.toLowerCase().endsWith('.obj'));
     const plyFile = bimFiles.find(f => f.name.toLowerCase().endsWith('.ply'));
     const ifcFile = bimFiles.find(f => f.name.toLowerCase().endsWith('.ifc'));
@@ -34,42 +33,21 @@ function ProjectCreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!name.trim()) {
-      setError('O nome do projeto é obrigatório');
-      return;
-    }
-
+    if (!name.trim()) return setError('Nome obrigatório');
     const bimFile = getBimFile();
-    if (!bimFile) {
-      setError('O arquivo BIM é obrigatório');
-      return;
-    }
+    if (!bimFile) return setError('Arquivo BIM obrigatório');
 
     const mtlFile = getMtlFile();
     const isObjFile = bimFile.name.toLowerCase().endsWith('.obj');
-    
-    // Validar que MTL só pode ser enviado com OBJ
-    if (mtlFile && !isObjFile) {
-      setError('O arquivo .mtl só pode ser enviado quando o arquivo BIM é .obj');
-      return;
-    }
+    if (mtlFile && !isObjFile) return setError('Arquivo .mtl requer um .obj');
 
     try {
       setLoading(true);
-      setError('');
-
       const formData = new FormData();
       formData.append('name', name);
-      if (description.trim()) {
-        formData.append('description', description);
-      }
+      if (description.trim()) formData.append('description', description);
       formData.append('modeloBim', bimFile);
-      
-      // Se houver arquivo .mtl e o BIM for .obj, adicionar como modeloMtl
-      if (mtlFile && isObjFile) {
-        formData.append('modeloMtl', mtlFile);
-      }
+      if (mtlFile && isObjFile) formData.append('modeloMtl', mtlFile);
 
       const project = await api.createProject(formData);
       navigate(`/projetos/${project.id}`);
@@ -81,111 +59,81 @@ function ProjectCreate() {
   };
 
   return (
-    <div className="project-create-wrap">
-      <div className="project-create-header">
-        <button className="project-create-back-btn" onClick={() => navigate('/')}>
-          ← Voltar
+    <div className="create-wrap">
+      <div className="create-header">
+        <button className="btn-back-link" onClick={() => navigate('/projetos')}>
+           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+           Voltar
         </button>
         <ThemeToggle />
       </div>
 
-      <div className="project-create-content">
-        <h1 className="project-create-title">Criar Novo Projeto</h1>
+      <div className="create-container">
+        <div className="create-card">
+          <h1 className="create-title">Novo Projeto</h1>
+          
+          {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
-        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+          <form className="create-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Nome do Projeto <span style={{color: '#EE3E34'}}>*</span></label>
+              <input
+                type="text"
+                className="form-input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Estação Sé - Plataforma Norte"
+                required
+              />
+            </div>
 
-        <form className="project-create-form" onSubmit={handleSubmit}>
-          <div className="project-create-field">
-            <label className="project-create-label">
-              Nome do Projeto <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              className="project-create-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Estação Morumbi - Bloco A"
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label className="form-label">Descrição</label>
+              <textarea
+                className="form-textarea"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Detalhes sobre o local ou escopo..."
+              />
+            </div>
 
-          <div className="project-create-field">
-            <label className="project-create-label">Descrição</label>
-            <textarea
-              className="project-create-textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição opcional do projeto"
-              rows={4}
-            />
-          </div>
+            <div className="form-group">
+              <label className="form-label">Arquivos BIM <span style={{color: '#EE3E34'}}>*</span></label>
+              <FileUpload
+                accept=".ifc,.dwg,.obj,.ply,.mtl"
+                multiple={true}
+                maxFiles={2}
+                onFilesSelected={handleFileSelected}
+                label="Clique ou arraste o arquivo BIM"
+                description=".obj (+ .mtl opcional), .ply, .ifc, .dwg"
+              />
+              
+              {bimFiles.length > 0 && (
+                <div className="file-list">
+                  {bimFiles.map((file, index) => (
+                    <div key={index} className="file-item">
+                      <svg className="file-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <span className="file-name">{file.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="project-create-field">
-            <label className="project-create-label">
-              Arquivo BIM <span className="required">*</span>
-            </label>
-            <FileUpload
-              accept=".ifc,.dwg,.obj,.ply,.mtl"
-              multiple={true}
-              maxFiles={2}
-              minSize={0}
-              maxSize={5 * 1024 * 1024 * 1024} // 5GB
-              onFilesSelected={handleFileSelected}
-              label="Selecionar arquivo BIM"
-              description="Formatos aceitos: .ifc, .dwg, .obj, .ply. Para arquivos .obj, você pode incluir um arquivo .mtl (máx. 5GB por arquivo)"
-            />
-            {bimFiles.length > 0 && (
-              <div className="project-create-files-info">
-                <p className="project-create-files-selected">
-                  Arquivos selecionados:
-                </p>
-                <ul className="project-create-files-list">
-                  {bimFiles.map((file, index) => {
-                    const isBim = !file.name.toLowerCase().endsWith('.mtl');
-                    const isObj = file.name.toLowerCase().endsWith('.obj');
-                    const isMtl = file.name.toLowerCase().endsWith('.mtl');
-                    return (
-                      <li key={index} className="project-create-file-item">
-                        <span className={isBim ? 'project-create-file-bim' : 'project-create-file-mtl'}>
-                          {isBim ? '📄' : '🎨'} {file.name}
-                        </span>
-                        {isMtl && !isObj && (
-                          <span className="project-create-file-warning">
-                            ⚠️ Arquivo .mtl só pode ser usado com .obj
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <div className="project-create-actions">
-            <button
-              type="button"
-              className="project-create-btn project-create-btn-cancel"
-              onClick={() => navigate('/projetos')}
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="project-create-btn project-create-btn-submit"
-              disabled={loading || !name.trim() || !getBimFile()}
-            >
-              {loading ? 'Criando...' : 'Criar Projeto'}
-            </button>
-          </div>
-        </form>
-
-        {loading && <LoadingSpinner message="Criando projeto..." />}
+            <div className="form-actions">
+              <button type="button" className="btn-cancel" onClick={() => navigate('/projetos')}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-submit" disabled={loading || !name.trim() || !getBimFile()}>
+                {loading ? 'Criando...' : 'Confirmar Criação'}
+              </button>
+            </div>
+          </form>
+        </div>
+        {loading && <LoadingSpinner />}
       </div>
     </div>
   );
 }
 
 export default ProjectCreate;
-

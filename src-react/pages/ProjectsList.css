@@ -1,113 +1,126 @@
-.projects-list-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 48px 24px;
-}
-
-.projects-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.projects-list-back-btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panelBg);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.projects-list-back-btn:hover {
-  background: var(--inputBg);
-}
-
-.projects-list-content {
+.projects-wrap {
+  min-height: 100vh;
+  background-color: var(--bg-light);
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
-.projects-list-title-section {
+.projects-header {
+  padding: 0 32px;
+  height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.projects-list-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text);
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.projects-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.projects-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
-.projects-list-create-btn {
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: none;
-  background: var(--metroBlue);
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.page-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 4px;
 }
 
-.projects-list-create-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.projects-list-grid {
+.projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.projects-list-empty {
-  text-align: center;
-  padding: 64px 24px;
-  background: var(--panelBg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.projects-list-empty p {
-  font-size: 16px;
-  color: var(--gray);
-  margin-bottom: 24px;
-}
-
-.projects-list-empty-btn {
-  padding: 12px 24px;
-  border-radius: 8px;
+.btn-back-link {
+  background: none;
   border: none;
-  background: var(--metroBlue);
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 6px;
   transition: all 0.2s;
 }
 
-.projects-list-empty-btn:hover {
-  opacity: 0.9;
+.btn-back-link:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
 }
 
-@media (max-width: 768px) {
-  .projects-list-title-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .projects-list-grid {
-    grid-template-columns: 1fr;
-  }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--metro-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 0.95rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.btn-primary:hover {
+  background-color: var(--metro-blue-hover);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  background-color: var(--card-bg);
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+}

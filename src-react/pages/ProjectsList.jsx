@@ -59,19 +59,32 @@ function ProjectsList() {
   };
 
   return (
-    <div className="projects-list-wrap">
-      <div className="projects-list-header">
-        <button className="projects-list-back-btn" onClick={() => navigate('/')}>
-          ← Voltar
-        </button>
+    <div className="projects-wrap">
+      {/* Header Fixo */}
+      <header className="projects-header">
+        <div className="header-left">
+          <button className="btn-back-link" onClick={() => navigate('/')}>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Voltar</span>
+          </button>
+        </div>
         <ThemeToggle />
-      </div>
+      </header>
 
-      <div className="projects-list-content">
-        <div className="projects-list-title-section">
-          <h1 className="projects-list-title">Projetos</h1>
-          <button className="projects-list-create-btn" onClick={() => navigate('/projetos/novo')}>
-            ➕ Novo Projeto
+      {/* Conteúdo Principal */}
+      <main className="projects-container">
+        <div className="projects-controls">
+          <div>
+            <h1 className="page-title">Projetos</h1>
+            <p className="page-subtitle">Gerencie os canteiros de obras e ativos monitorados.</p>
+          </div>
+          <button className="btn-primary" onClick={() => navigate('/projetos/novo')}>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Projeto
           </button>
         </div>
 
@@ -80,14 +93,14 @@ function ProjectsList() {
         {loading ? (
           <LoadingSpinner message="Carregando projetos..." />
         ) : projects.length === 0 ? (
-          <div className="projects-list-empty">
-            <p>Nenhum projeto cadastrado ainda.</p>
-            <button className="projects-list-empty-btn" onClick={() => navigate('/projetos/novo')}>
+          <div className="empty-state">
+            <p>Nenhum projeto encontrado no sistema.</p>
+            <button className="btn-primary" onClick={() => navigate('/projetos/novo')}>
               Criar Primeiro Projeto
             </button>
           </div>
         ) : (
-          <div className="projects-list-grid">
+          <div className="projects-grid">
             {projects.map((project) => (
               <ProjectCard 
                 key={project.id} 
@@ -97,18 +110,18 @@ function ProjectsList() {
             ))}
           </div>
         )}
-      </div>
+      </main>
 
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        title="Deletar Projeto"
-        message={`Tem certeza que deseja deletar o projeto "${projectToDelete?.name}"? Esta ação não pode ser desfeita e todos os registros e análises associados serão removidos.`}
+        title="Excluir Projeto"
+        message={`Atenção: O projeto "${projectToDelete?.name}" e todos os seus registros serão removidos permanentemente. Deseja continuar?`}
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
           setShowDeleteDialog(false);
           setProjectToDelete(null);
         }}
-        confirmText={deleting ? 'Deletando...' : 'Deletar'}
+        confirmText={deleting ? 'Excluindo...' : 'Confirmar Exclusão'}
         cancelText="Cancelar"
       />
     </div>
@@ -116,4 +129,3 @@ function ProjectsList() {
 }
 
 export default ProjectsList;
-
