@@ -1,0 +1,59 @@
+.analysis-card {
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.analysis-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--metroBlue);
+}
+
+.analysis-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.analysis-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+}
+
+.analysis-card-meta {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.analysis-card-progress {
+  margin-bottom: 16px;
+}
+
+.analysis-card-metrics {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.analysis-card-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.analysis-card-date {
+  font-size: 12px;
+  color: var(--gray);
+}
+

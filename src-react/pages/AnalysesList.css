@@ -1,0 +1,133 @@
+.analyses-list-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.analyses-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.analyses-list-back-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panelBg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analyses-list-back-btn:hover {
+  background: var(--inputBg);
+}
+
+.analyses-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.analyses-list-title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.analyses-list-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.analyses-list-refresh-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panelBg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analyses-list-refresh-btn:hover:not(:disabled) {
+  background: var(--inputBg);
+}
+
+.analyses-list-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.analyses-list-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.analyses-list-filter-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panelBg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analyses-list-filter-btn:hover {
+  background: var(--inputBg);
+}
+
+.analyses-list-filter-btn.active {
+  background: var(--metroBlue);
+  color: white;
+  border-color: var(--metroBlue);
+}
+
+.analyses-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.analyses-list-empty {
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.analyses-list-empty p {
+  font-size: 16px;
+  color: var(--gray);
+}
+
+@media (max-width: 768px) {
+  .analyses-list-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .analyses-list-filters {
+    width: 100%;
+  }
+
+  .analyses-list-filter-btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+

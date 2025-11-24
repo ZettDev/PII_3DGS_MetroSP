@@ -39,7 +39,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -48,6 +48,12 @@
   border-bottom: 1px solid var(--border);
   z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.obj-viewer-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .obj-viewer-title {
@@ -66,22 +72,6 @@
   margin-top: 64px;
 }
 
-.obj-toolbar {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: var(--panelBg);
-  border-bottom: 1px solid var(--border);
-  z-index: 10;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
 .obj-button {
   padding: 8px 16px;
   border-radius: 8px;
@@ -91,16 +81,6 @@
   font-size: 14px;
   transition: opacity 0.2s, transform 0.2s;
   border: none;
-}
-
-.obj-button-primary {
-  background-color: var(--metroBlue);
-  color: white;
-}
-
-.obj-button-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 .obj-button-secondary {
@@ -114,41 +94,9 @@
   transform: translateY(-1px);
 }
 
-.obj-hint {
-  color: var(--gray);
-  font-size: 14px;
-  margin-left: auto;
-}
-
 .obj-app {
   position: absolute;
-  inset: 56px 0 0 0;
-}
-
-.obj-dropzone {
-  position: absolute;
-  inset: 56px 0 0 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.obj-dropzone-badge {
-  display: none;
-  pointer-events: none;
-  border: 2px dashed var(--border);
-  color: var(--gray);
-  background: var(--panelBg);
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-family: "Open Sans", Arial, sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.obj-dropzone.active .obj-dropzone-badge {
-  display: inline-block;
+  inset: 64px 0 0 0;
 }
 
 @media (max-width: 768px) {
@@ -165,28 +113,8 @@
     margin-top: 56px;
   }
 
-  .obj-toolbar {
-    top: 56px;
-    height: 48px;
-    padding: 0 12px;
-    gap: 8px;
-  }
-
-  .obj-button {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  .obj-hint {
-    display: none;
-  }
-
   .obj-app {
-    inset: 48px 0 0 0;
-  }
-
-  .obj-dropzone {
-    inset: 48px 0 0 0;
+    inset: 56px 0 0 0;
   }
 
   .obj-exit-button {
