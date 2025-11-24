@@ -1,0 +1,173 @@
+.record-create-wrap {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.record-create-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.record-create-back-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panelBg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.record-create-back-btn:hover {
+  background: var(--inputBg);
+}
+
+.record-create-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.record-create-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.record-create-subtitle {
+  font-size: 16px;
+  color: var(--gray);
+  margin: 0;
+}
+
+.record-create-info {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+[data-theme="dark"] .record-create-info {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+}
+
+.record-create-info p {
+  font-size: 14px;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .record-create-info p {
+  color: #93c5fd;
+}
+
+.record-create-form {
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.record-create-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.record-create-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.required {
+  color: #ef4444;
+}
+
+.record-create-input {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--inputBg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.record-create-input:focus {
+  outline: none;
+  border-color: var(--metroBlue);
+  box-shadow: 0 0 0 2px rgba(0, 20, 137, 0.1);
+}
+
+.record-create-photos-count {
+  font-size: 14px;
+  color: var(--metroBlue);
+  font-weight: 600;
+  margin: 8px 0 0 0;
+}
+
+.record-create-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.record-create-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.record-create-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.record-create-btn-cancel {
+  background: var(--panelBg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.record-create-btn-cancel:hover:not(:disabled) {
+  background: var(--inputBg);
+}
+
+.record-create-btn-submit {
+  background: var(--metroBlue);
+  color: white;
+}
+
+.record-create-btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .record-create-actions {
+    flex-direction: column;
+  }
+
+  .record-create-btn {
+    width: 100%;
+  }
+}
+

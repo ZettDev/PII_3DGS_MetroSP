@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -9,15 +9,13 @@ import './OBJViewer.css';
 
 function OBJViewer() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
   const controlsRef = useRef(null);
   const currentObjectRef = useRef(null);
-  const dropzoneRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const handleFilesRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -132,23 +130,21 @@ function OBJViewer() {
       controls.update();
     }
 
-    async function loadOBJFromArrayBuffer(arrayBuffer, fileName) {
+    async function loadOBJFromArrayBuffer(arrayBuffer, fileName, mtlArrayBuffer = null) {
       const loader = new OBJLoader();
-      
-      // Try to load MTL file if exists
-      const mtlFileName = fileName.replace(/\.obj$/i, '.mtl');
       let materials = null;
-      
-      try {
-        // Check if MTL file exists (this is a simplified check)
-        // In a real scenario, you'd need to handle MTL file loading separately
-        const objText = new TextDecoder().decode(arrayBuffer.slice(0, Math.min(1000, arrayBuffer.byteLength)));
-        if (objText.includes('mtllib')) {
-          // MTL file reference found, but we'll load without it for now
-          // In production, you'd fetch the MTL file separately
+
+      // Load MTL if provided
+      if (mtlArrayBuffer) {
+        try {
+          const mtlLoader = new MTLLoader();
+          const mtlText = new TextDecoder().decode(mtlArrayBuffer);
+          materials = mtlLoader.parse(mtlText);
+          materials.preload();
+          loader.setMaterials(materials);
+        } catch (e) {
+          console.log('Erro ao carregar MTL:', e);
         }
-      } catch (e) {
-        console.log('No MTL file found or error loading:', e);
       }
 
       const object = loader.parse(new TextDecoder().decode(arrayBuffer));
@@ -173,21 +169,53 @@ function OBJViewer() {
       fitCameraToObject(object);
     }
 
-    const handleFiles = (files) => {
-      const file = files?.[0];
-      if (!file) return;
-      if (!file.name.toLowerCase().endsWith('.obj')) {
-        alert('Please select a .obj file.');
-        return;
+    async function loadOBJFromURL(url, mtlUrl = null) {
+      try {
+        // Load OBJ file
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Erro ao carregar arquivo');
+        const arrayBuffer = await response.arrayBuffer();
+        const fileName = url.split('/').pop() || 'modelo.obj';
+        
+        // Try to load MTL file
+        let mtlArrayBuffer = null;
+        if (mtlUrl) {
+          // Use provided MTL URL
+          try {
+            const mtlResponse = await fetch(mtlUrl);
+            if (mtlResponse.ok) {
+              mtlArrayBuffer = await mtlResponse.arrayBuffer();
+              console.log('Arquivo MTL carregado com sucesso');
+            } else {
+              console.log('Arquivo MTL não encontrado na URL fornecida');
+            }
+          } catch (e) {
+            console.log('Erro ao carregar MTL da URL fornecida:', e);
+          }
+        } else if (fileName.toLowerCase().endsWith('.obj')) {
+          // Fallback: try to load MTL by replacing .obj with .mtl in URL
+          try {
+            const fallbackMtlUrl = url.replace(/\.obj$/i, '.mtl');
+            const mtlResponse = await fetch(fallbackMtlUrl);
+            if (mtlResponse.ok) {
+              mtlArrayBuffer = await mtlResponse.arrayBuffer();
+              console.log('Arquivo MTL carregado via fallback');
+            }
+          } catch (e) {
+            // MTL file not found, continue without it
+            console.log('Arquivo MTL não encontrado, continuando sem materiais');
+          }
+        }
+        
+        loadOBJFromArrayBuffer(arrayBuffer, fileName, mtlArrayBuffer);
+      } catch (error) {
+        console.error('Erro ao carregar OBJ da URL:', error);
+        alert('Erro ao carregar arquivo: ' + error.message);
       }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        loadOBJFromArrayBuffer(e.target.result, file.name);
-      };
-      reader.readAsArrayBuffer(file);
-    };
-    
-    handleFilesRef.current = handleFiles;
+    }
+
+    // Store function reference for use in separate effect
+    window.loadOBJFromURL = loadOBJFromURL;
 
     // Theme change observer
     const themeObserver = new MutationObserver(() => {
@@ -230,11 +258,14 @@ function OBJViewer() {
     };
   }, []);
 
-  const handleFileChange = (e) => {
-    if (e.target.files && handleFilesRef.current) {
-      handleFilesRef.current(e.target.files);
+  // Load from URL if provided (separate effect to avoid re-initializing Three.js)
+  useEffect(() => {
+    const urlParam = searchParams.get('url');
+    const mtlUrlParam = searchParams.get('mtlUrl');
+    if (urlParam && window.loadOBJFromURL) {
+      window.loadOBJFromURL(urlParam, mtlUrlParam || null);
     }
-  };
+  }, [searchParams]);
 
   const handleResetView = () => {
     if (currentObjectRef.current && controlsRef.current && cameraRef.current) {
@@ -276,65 +307,23 @@ function OBJViewer() {
       <button
         className="obj-exit-button"
         onClick={() => navigate('/')}
-        title="Exit viewer"
+        title="Sair do visualizador"
       >
-        ← Exit
+        ← Sair
       </button>
       
       <div className="obj-viewer-header">
-        <h1 className="obj-viewer-title">OBJ Viewer</h1>
-        <ThemeToggle />
+        <h1 className="obj-viewer-title">Visualizar arquivo BIM</h1>
+        <div className="obj-viewer-header-right">
+          <button className="obj-button obj-button-secondary" onClick={handleResetView}>
+            Redefinir Visualização
+          </button>
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="obj-viewer-container">
-        <div className="obj-toolbar">
-          <label htmlFor="objFileInput" className="obj-button obj-button-primary">
-            Choose File
-          </label>
-          <input
-            id="objFileInput"
-            ref={fileInputRef}
-            type="file"
-            accept=".obj"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
-          <button className="obj-button obj-button-secondary" onClick={handleResetView}>
-            Reset View
-          </button>
-          <span className="obj-hint">Drop a .obj file anywhere</span>
-        </div>
         <div ref={containerRef} className="obj-app"></div>
-        <div
-          ref={dropzoneRef}
-          className="obj-dropzone"
-          onDragEnter={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (dropzoneRef.current) dropzoneRef.current.classList.add('active');
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (dropzoneRef.current) dropzoneRef.current.classList.add('active');
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (dropzoneRef.current) dropzoneRef.current.classList.remove('active');
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (dropzoneRef.current) dropzoneRef.current.classList.remove('active');
-            const dt = e.dataTransfer;
-            if (dt?.files?.length && handleFilesRef.current) {
-              handleFilesRef.current(dt.files);
-            }
-          }}
-        >
-          <div className="obj-dropzone-badge">Drop .obj to load</div>
-        </div>
       </div>
     </div>
   );

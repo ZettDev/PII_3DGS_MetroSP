@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
@@ -8,6 +8,7 @@ import './PLYViewer.css';
 
 function PLYViewer() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
@@ -170,6 +171,21 @@ function PLYViewer() {
       fitCameraToObject(points);
     }
 
+    async function loadPLYFromURL(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Erro ao carregar arquivo');
+        const arrayBuffer = await response.arrayBuffer();
+        loadPLYFromArrayBuffer(arrayBuffer);
+      } catch (error) {
+        console.error('Erro ao carregar PLY da URL:', error);
+        alert('Erro ao carregar arquivo: ' + error.message);
+      }
+    }
+
+    // Store function reference for use in separate effect
+    window.loadPLYFromURL = loadPLYFromURL;
+
     const handleFiles = (files) => {
       const file = files?.[0];
       if (!file) return;
@@ -232,6 +248,14 @@ function PLYViewer() {
       }
     };
   }, []);
+
+  // Load from URL if provided (separate effect to avoid re-initializing Three.js)
+  useEffect(() => {
+    const urlParam = searchParams.get('url');
+    if (urlParam && window.loadPLYFromURL) {
+      window.loadPLYFromURL(urlParam);
+    }
+  }, [searchParams]);
 
   const handleFileChange = (e) => {
     if (e.target.files && handleFilesRef.current) {
