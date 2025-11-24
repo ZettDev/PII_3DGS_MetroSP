@@ -5,109 +5,71 @@ import './Home.css';
 
 function Home() {
   const navigate = useNavigate();
-  const [showSavedFiles, setShowSavedFiles] = useState(false);
+  const [showFiles, setShowFiles] = useState(false);
 
   return (
-    <div className="home-wrap">
-      <div className="home-header">
+    <div className="home-container">
+      <nav className="home-nav">
         <ThemeToggle />
-      </div>
+      </nav>
 
-      <div className="home-main-content">
-        <div className="home-description">
-          <h2>Web3DGS</h2>
-          <p>
-            Web-based 3D Gaussian Splatting viewer and visualization tool. Upload and explore 3D models in .ply, .ksplat, or .splat formats directly in your browser with high-performance rendering.
-          </p>
+      <div className="home-hero">
+        <div className="hero-glow"></div>
+        <h1 className="hero-title">Web3DGS</h1>
+        <p className="hero-subtitle">
+          Plataforma de visualização avançada para Gaussian Splatting e fotogrametria 3D.
+          Renderização de alta performance diretamente no seu navegador.
+        </p>
+
+        <div className="action-grid">
+          <div className="primary-card" onClick={() => navigate('/threedgs')}>
+            <span className="card-title">Iniciar Visualizador 3DGS</span>
+            <span className="card-desc">Carregue arquivos .splat, .ksplat ou .ply e visualize cenas com iluminação realista em tempo real.</span>
+          </div>
+
+          <div className="secondary-card" onClick={() => navigate('/obj-viewer')}>
+            <h3>Visualizador OBJ</h3>
+            <p>Para modelos 3D tradicionais com malhas texturizadas.</p>
+            <div style={{marginTop: 'auto'}}>
+              <span className="format-tag">.OBJ</span>
+              <span className="format-tag" style={{marginLeft: '8px'}}>.MTL</span>
+            </div>
+          </div>
+
+          <div className="secondary-card" onClick={() => navigate('/ply-viewer')}>
+            <h3>Visualizador PLY</h3>
+            <p>Visualização de nuvem de pontos densa e dados brutos.</p>
+            <div style={{marginTop: 'auto'}}>
+              <span className="format-tag">.PLY</span>
+            </div>
+          </div>
         </div>
 
-        <div className="home-button-grid">
-          <button className="home-btn" onClick={() => {}}>
-            Create 3DGS
-          </button>
-          <button className="home-btn home-btn-secondary" onClick={() => setShowSavedFiles(!showSavedFiles)}>
-            View Saved Files
-          </button>
-        </div>
-
-        {showSavedFiles && (
-          <div className="home-saved-files-section">
-            <button className="home-btn home-btn-back" onClick={() => setShowSavedFiles(false)}>
-              ← Back
+        <div style={{marginTop: '32px'}}>
+            <button className="home-btn-outline" onClick={() => setShowFiles(true)}>
+                Ver Arquivos Salvos
             </button>
-            <div className="home-saved-files-grid">
-              <button className="home-btn home-btn-file-type" onClick={() => navigate('/threedgs')}>
-                3DGS
-              </button>
-              <button className="home-btn home-btn-file-type" onClick={() => navigate('/obj-viewer')}>
-                .OBJ
-              </button>
-              <button className="home-btn home-btn-file-type" onClick={() => navigate('/ply-viewer')}>
-                .PLY
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
+      </div>
 
-        <div className="home-controls-section">
-          <h3>3DGS Viewer Controls</h3>
-          <div className="home-controls-grid">
-            <div className="home-control-group">
-              <h4>Mouse Input</h4>
-              <div className="home-control-item">
-                <div className="home-control-key">LMB</div>
-                <div className="home-control-desc">Set focal point</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">LMB + Drag</div>
-                <div className="home-control-desc">Orbit camera</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">RMB + Drag</div>
-                <div className="home-control-desc">Pan camera</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">Scroll</div>
-                <div className="home-control-desc">Zoom in/out</div>
-              </div>
+      {showFiles && (
+        <div className="saved-files-overlay" onClick={(e) => e.target === e.currentTarget && setShowFiles(false)}>
+          <div className="saved-modal">
+            <div className="modal-header">
+              <h2>Arquivos Salvos</h2>
+              <button className="close-btn" onClick={() => setShowFiles(false)}>&times;</button>
             </div>
-            <div className="home-control-group">
-              <h4>Keyboard Shortcuts</h4>
-              <div className="home-control-item">
-                <div className="home-control-key">I</div>
-                <div className="home-control-desc">Display debug info panel</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">C</div>
-                <div className="home-control-desc">Toggle mesh cursor</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">U</div>
-                <div className="home-control-desc">Toggle controls orientation marker</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">← / →</div>
-                <div className="home-control-desc">Rotate camera-up</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">P</div>
-                <div className="home-control-desc">Toggle point-cloud mode</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">O</div>
-                <div className="home-control-desc">Toggle orthographic mode</div>
-              </div>
-              <div className="home-control-item">
-                <div className="home-control-key">= / -</div>
-                <div className="home-control-desc">Adjust splat scale</div>
+            <div className="file-list">
+              <div className="file-item" onClick={() => navigate('/threedgs')}>
+                <span>Demo Scene 3DGS</span>
+                <span className="format-tag">SPLAT</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 export default Home;
-

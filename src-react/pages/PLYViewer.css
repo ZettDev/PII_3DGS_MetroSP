@@ -1,4 +1,4 @@
-.ply-viewer-page {
+.ply-container {
   position: relative;
   width: 100vw;
   height: 100vh;
@@ -6,193 +6,90 @@
   background: var(--bg);
 }
 
-.ply-exit-button {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10000;
-  background: rgba(0, 20, 137, 0.9);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: "Open Sans", Arial, sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  transition: background 0.2s, transform 0.2s;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.ply-exit-button:hover {
-  background: rgba(0, 20, 137, 1);
-  transform: translateY(-1px);
-}
-
-.ply-exit-button:active {
-  transform: translateY(0);
-}
-
-.ply-viewer-header {
-  position: fixed;
+.ply-canvas {
+  position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px 0 160px;
-  background: var(--panelBg);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-.ply-viewer-title {
-  font-size: 32px;
-  font-weight: 800;
-  margin: 0;
-  font-family: "Open Sans", Arial, sans-serif;
-  color: var(--text);
-}
-
-.ply-viewer-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  margin-top: 64px;
-}
-
-.ply-toolbar {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: var(--panelBg);
-  border-bottom: 1px solid var(--border);
+.ply-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   z-index: 10;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
-.ply-button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: "Open Sans", Arial, sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  transition: opacity 0.2s, transform 0.2s;
+.ply-controls-box {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 12, 16, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid var(--metroBlue);
+  padding: 20px 32px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  pointer-events: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.ply-btn {
+  padding: 12px 24px;
   border: none;
-}
-
-.ply-button-primary {
-  background-color: var(--metroBlue);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--metroBlue);
   color: white;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
 }
 
-.ply-button-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.ply-btn:hover {
+  background: #1a3ec2;
+  box-shadow: 0 0 15px var(--metroBlueGlow);
 }
 
-.ply-button-secondary {
-  background: var(--panelBg);
-  border: 1px solid var(--border);
-  color: var(--text);
+.ply-btn-ghost {
+  padding: 12px 24px;
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
 }
 
-.ply-button-secondary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.ply-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: white;
 }
 
-.ply-hint {
-  color: var(--gray);
-  font-size: 14px;
-  margin-left: auto;
-}
-
-.ply-app {
+.drop-msg {
   position: absolute;
-  inset: 56px 0 0 0;
-}
-
-.ply-dropzone {
-  position: absolute;
-  inset: 56px 0 0 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.ply-dropzone-badge {
-  display: none;
-  pointer-events: none;
-  border: 2px dashed var(--border);
-  color: var(--gray);
-  background: var(--panelBg);
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-family: "Open Sans", Arial, sans-serif;
-  font-size: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 40px 60px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  color: white;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-.ply-dropzone.active .ply-dropzone-badge {
-  display: inline-block;
-}
-
-@media (max-width: 768px) {
-  .ply-viewer-header {
-    height: 56px;
-    padding: 0 16px 0 140px;
-  }
-
-  .ply-viewer-title {
-    font-size: 24px;
-  }
-
-  .ply-viewer-container {
-    margin-top: 56px;
-  }
-
-  .ply-toolbar {
-    top: 56px;
-    height: 48px;
-    padding: 0 12px;
-    gap: 8px;
-  }
-
-  .ply-button {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  .ply-hint {
-    display: none;
-  }
-
-  .ply-app {
-    inset: 48px 0 0 0;
-  }
-
-  .ply-dropzone {
-    inset: 48px 0 0 0;
-  }
-
-  .ply-exit-button {
-    top: 12px;
-    left: 12px;
-    padding: 10px 16px;
-    font-size: 13px;
-  }
+.drop-msg.visible {
+  opacity: 1;
 }

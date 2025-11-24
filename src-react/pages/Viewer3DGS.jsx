@@ -5,54 +5,48 @@ import './Viewer3DGS.css';
 
 function Viewer3DGS() {
   const navigate = useNavigate();
+  const [showControls, setShowControls] = useState(true);
+  
   const [alphaRemovalThreshold, setAlphaRemovalThreshold] = useState(1);
   const [cameraUp, setCameraUp] = useState('0, 1, 0');
-  const [cameraPosition, setCameraPosition] = useState('0, 1, 0');
-  const [cameraLookAt, setCameraLookAt] = useState('1, 0, 0');
+  const [cameraPosition, setCameraPosition] = useState('0, 10, 15');
+  const [cameraLookAt, setCameraLookAt] = useState('0, 0, 0');
   const [antialiased, setAntialiased] = useState(false);
   const [scene2D, setScene2D] = useState(false);
-  const [sphericalHarmonicsDegree, setSphericalHarmonicsDegree] = useState(0);
-  const [viewStatus, setViewStatus] = useState('');
-  const [viewError, setViewError] = useState('');
-  const [fileName, setFileName] = useState('(No file chosen)');
+  const [shDegree, setShDegree] = useState(0);
+  
   const [loading, setLoading] = useState(false);
-  const [isViewerActive, setIsViewerActive] = useState(false);
-  const fileInputRef = useRef(null);
-  const viewerContainerRef = useRef(null);
+  const [statusMsg, setStatusMsg] = useState('');
+  const [fileName, setFileName] = useState('Nenhum arquivo selecionado');
+  
   const viewerRef = useRef(null);
-  const exitButtonRef = useRef(null);
+  const containerRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Auto-load from localStorage if available
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('autoLoad') === 'true') {
       loadFromLocalStorage();
     }
-
-    // Cleanup on unmount
     return () => {
-      if (viewerRef.current) {
-        if (viewerRef.current.dispose) {
-          viewerRef.current.dispose();
-        }
-        if (viewerRef.current.rootElement && viewerRef.current.rootElement.parentNode) {
-          viewerRef.current.rootElement.parentNode.removeChild(viewerRef.current.rootElement);
-        }
-        viewerRef.current = null;
-      }
-      
-      // Restore React content and scroll
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.display = 'block';
-      }
-      document.body.style.overflow = '';
-      document.body.style.margin = '';
-      document.body.style.padding = '';
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.overflow = '';
+      cleanupViewer();
+      restorePageSettings();
     };
   }, []);
+
+  const cleanupViewer = () => {
+    if (viewerRef.current) {
+      if (viewerRef.current.dispose) viewerRef.current.dispose();
+      viewerRef.current = null;
+    }
+  };
+
+  const restorePageSettings = () => {
+    document.body.style.overflow = '';
+    document.body.style.backgroundColor = '';
+    const root = document.getElementById('root');
+    if (root) root.style.display = 'block';
+  };
 
   const loadFromLocalStorage = async () => {
     const pendingFileBase64 = localStorage.getItem('pending3DGSFile');
@@ -65,395 +59,188 @@ function Viewer3DGS() {
         for (let i = 0; i < binaryString.length; i++) {
           bytes[i] = binaryString.charCodeAt(i);
         }
-        const arrayBuffer = bytes.buffer;
         localStorage.removeItem('pending3DGSFile');
         localStorage.removeItem('pending3DGSFileName');
-        
-        await loadAndViewFile(arrayBuffer, pendingFileName);
+        await loadAndViewFile(bytes.buffer, pendingFileName);
       } catch (e) {
         console.error(e);
-        setViewError('Could not load file. It may be too large for auto-loading.');
       }
-    }
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
     }
   };
 
   const loadAndViewFile = async (arrayBuffer, fileName) => {
     try {
       setLoading(true);
-      setViewError('');
-      setViewStatus('Loading scene...');
+      setStatusMsg('Carregando motor gráfico...');
 
-      // Dynamic import to load modules
+      // Import dinâmico da lib compilada
       const GaussianSplats3D = await import('gaussian-splats-3d');
-      const THREE = await import('three');
-
+      
       const format = GaussianSplats3D.LoaderUtils.sceneFormatFromPath(fileName);
-      const cameraUpArray = cameraUp.split(',').map(v => parseFloat(v.trim()));
-      const cameraPositionArray = cameraPosition.split(',').map(v => parseFloat(v.trim()));
-      const cameraLookAtArray = cameraLookAt.split(',').map(v => parseFloat(v.trim()));
+      const parseVec = (str) => str.split(',').map(n => parseFloat(n.trim()));
 
-      const viewerOptions = {
-        cameraUp: cameraUpArray,
-        initialCameraPosition: cameraPositionArray,
-        initialCameraLookAt: cameraLookAtArray,
+      const options = {
+        cameraUp: parseVec(cameraUp),
+        initialCameraPosition: parseVec(cameraPosition),
+        initialCameraLookAt: parseVec(cameraLookAt),
         halfPrecisionCovariancesOnGPU: false,
-        antialiased: antialiased || false,
+        antialiased: antialiased,
         splatRenderMode: scene2D ? GaussianSplats3D.SplatRenderMode.TwoD : GaussianSplats3D.SplatRenderMode.ThreeD,
-        sphericalHarmonicsDegree: sphericalHarmonicsDegree
+        sphericalHarmonicsDegree: shDegree,
+        rootElement: containerRef.current, // Renderiza direto no container do React
+        useBuiltInControls: true
       };
 
-      const splatBufferOptions = {
-        splatAlphaRemovalThreshold: alphaRemovalThreshold
-      };
+      cleanupViewer();
+
+      // Prepara ambiente
+      const rootElement = document.getElementById('root');
+      if (rootElement) rootElement.style.display = 'none';
+      
+      if(containerRef.current) {
+          containerRef.current.style.display = 'block';
+          // Limpa o container caso tenha lixo
+          while(containerRef.current.firstChild && containerRef.current.firstChild.className !== 'viewer-ui-layer') {
+              containerRef.current.removeChild(containerRef.current.firstChild);
+          }
+      }
+
+      document.body.style.overflow = 'hidden';
+      document.body.style.backgroundColor = '#000000';
+
+      const viewer = new GaussianSplats3D.Viewer(options);
+      viewerRef.current = viewer;
 
       let splatBuffer;
       if (format === GaussianSplats3D.SceneFormat.Ply) {
-        splatBuffer = await GaussianSplats3D.PlyLoader.loadFromFileData(
-          arrayBuffer, alphaRemovalThreshold, 0, true, sphericalHarmonicsDegree
-        );
+        splatBuffer = await GaussianSplats3D.PlyLoader.loadFromFileData(arrayBuffer, alphaRemovalThreshold, 0, true, shDegree);
       } else if (format === GaussianSplats3D.SceneFormat.Splat) {
-        splatBuffer = await GaussianSplats3D.SplatLoader.loadFromFileData(
-          arrayBuffer, alphaRemovalThreshold, 0, true
-        );
+        splatBuffer = await GaussianSplats3D.SplatLoader.loadFromFileData(arrayBuffer, alphaRemovalThreshold, 0, true);
       } else {
         splatBuffer = await GaussianSplats3D.KSplatLoader.loadFromFileData(arrayBuffer);
       }
 
-      // Hide React content and setup viewer
-      if (viewerContainerRef.current) {
-        viewerContainerRef.current.style.display = 'none';
-      }
-      
-      // Hide root element to prevent black screen overlay, but keep exit button visible
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.display = 'none';
-      }
-      
-      // Move exit button to body so it stays visible
-      const exitButton = exitButtonRef.current || document.querySelector('.viewer-exit-button');
-      if (exitButton && exitButton.parentNode !== document.body) {
-        // Store original parent to restore later
-        exitButton.dataset.originalParent = exitButton.parentNode?.className || '';
-        document.body.appendChild(exitButton);
-        // Reattach click handler to ensure it works after moving to body
-        exitButton.onclick = handleReset;
-      }
-      
-      // Disable scroll
-      document.body.style.overflow = 'hidden';
-      document.body.style.margin = '0';
-      document.body.style.padding = '0';
-      document.body.style.backgroundColor = '#000000';
-      document.documentElement.style.overflow = 'hidden';
-
-      // Clean up any existing viewer
-      if (viewerRef.current) {
-        if (viewerRef.current.dispose) {
-          viewerRef.current.dispose();
-        }
-        if (viewerRef.current.rootElement && viewerRef.current.rootElement.parentNode) {
-          viewerRef.current.rootElement.parentNode.removeChild(viewerRef.current.rootElement);
-        }
-      }
-
-      const viewer = new GaussianSplats3D.Viewer(viewerOptions);
-      viewerRef.current = viewer;
-      
-      await viewer.addSplatBuffers([splatBuffer], [splatBufferOptions]);
+      await viewer.addSplatBuffers([splatBuffer], [{ splatAlphaRemovalThreshold: alphaRemovalThreshold }]);
       viewer.start();
       
-      setIsViewerActive(true);
-      setViewStatus('');
       setLoading(false);
+      if (window.innerWidth <= 768) setShowControls(false);
+      
     } catch (e) {
       console.error(e);
-      setViewError('Could not view scene.');
-      setLoading(false);
+      setStatusMsg('Erro: ' + e.message);
+      setTimeout(() => {
+          setLoading(false);
+          restorePageSettings();
+      }, 3000);
     }
   };
 
-  const handleView = async () => {
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      setViewError('Please choose a file to view.');
-      return;
-    }
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setFileName(file.name);
+  };
 
+  const handleView = async () => {
+    if (!fileInputRef.current?.files?.[0]) return;
+    const file = fileInputRef.current.files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
-      loadAndViewFile(e.target.result, file.name);
-    };
+    reader.onload = (e) => loadAndViewFile(e.target.result, file.name);
     reader.readAsArrayBuffer(file);
   };
 
   const handleReset = () => {
-    if (viewerRef.current) {
-      if (viewerRef.current.dispose) {
-        viewerRef.current.dispose();
-      }
-      if (viewerRef.current.rootElement && viewerRef.current.rootElement.parentNode) {
-        viewerRef.current.rootElement.parentNode.removeChild(viewerRef.current.rootElement);
-      }
-      viewerRef.current = null;
-    }
-    
-    // Restore React content
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-      rootElement.style.display = 'block';
-    }
-    
-    // Move exit button back to its original position
-    const exitButton = exitButtonRef.current || document.querySelector('.viewer-exit-button');
-    const viewerWrap = viewerContainerRef.current;
-    if (exitButton && viewerWrap && exitButton.parentNode === document.body) {
-      viewerWrap.insertBefore(exitButton, viewerWrap.firstChild);
-      // Remove the native onclick handler since React will handle it
-      exitButton.onclick = null;
-    }
-    
-    // Restore scroll
-    document.body.style.overflow = '';
-    document.body.style.margin = '';
-    document.body.style.padding = '';
-    document.body.style.backgroundColor = '';
-    document.documentElement.style.overflow = '';
-    
-    if (viewerContainerRef.current) {
-      viewerContainerRef.current.style.display = 'block';
-    }
-    
-    setIsViewerActive(false);
-    setViewStatus('');
-    setViewError('');
-    setFileName('(No file chosen)');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    cleanupViewer();
+    restorePageSettings();
     navigate('/');
   };
 
   return (
-    <div className="viewer-wrap" ref={viewerContainerRef}>
-      <button
-        ref={exitButtonRef}
-        className="viewer-exit-button"
-        onClick={handleReset}
-        title="Exit viewer"
-      >
-        ← Exit
-      </button>
-      <div className="viewer-header">
-        <h1 className="viewer-title">Web3DGS</h1>
-        <ThemeToggle />
-      </div>
-
-      <div className="viewer-content">
-        <div className="viewer-panel">
-          <div className="viewer-small-title">
-            View a <span className="viewer-file-ext">.ply</span>, <span className="viewer-file-ext">.ksplat</span>, or <span className="viewer-file-ext-small">.splat</span> file
-          </div>
-          <table style={{ textAlign: 'left', width: '100%' }}>
-            <tbody>
-              <tr>
-                <td colSpan="2">
-                  <label htmlFor="viewFile">
-                    <span className="viewer-button viewer-button-secondary" style={{ display: 'inline-block', cursor: 'pointer' }}>
-                      Choose file
-                    </span>
-                    <input
-                      type="file"
-                      id="viewFile"
-                      ref={fileInputRef}
-                      style={{ display: 'none' }}
-                      onChange={handleFileChange}
-                      accept=".ply,.ksplat,.splat"
-                    />
-                  </label>
-                  <span style={{ paddingLeft: '15px', color: 'var(--gray)' }}>{fileName}</span>
-                </td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '12px' }}></td></tr>
-              <tr>
-                <td>Minimum alpha:&nbsp;</td>
-                <td>
-                  <input
-                    type="text"
-                    className="viewer-text-input"
-                    style={{ width: '60px' }}
-                    value={alphaRemovalThreshold}
-                    onChange={(e) => setAlphaRemovalThreshold(parseInt(e.target.value) || 1)}
-                  />
-                  <span className="viewer-valid-label">(1 - 255)</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Anti-aliased</td>
-                <td style={{ textAlign: 'left' }}>
-                  <input
-                    type="checkbox"
-                    className="viewer-checkbox"
-                    checked={antialiased}
-                    onChange={(e) => setAntialiased(e.target.checked)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>2D scene</td>
-                <td style={{ textAlign: 'left' }}>
-                  <input
-                    type="checkbox"
-                    className="viewer-checkbox"
-                    checked={scene2D}
-                    onChange={(e) => setScene2D(e.target.checked)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Camera up:&nbsp;</td>
-                <td>
-                  <input
-                    type="text"
-                    className="viewer-text-input"
-                    style={{ width: '120px' }}
-                    value={cameraUp}
-                    onChange={(e) => setCameraUp(e.target.value)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Camera position:&nbsp;</td>
-                <td>
-                  <input
-                    type="text"
-                    className="viewer-text-input"
-                    style={{ width: '120px' }}
-                    value={cameraPosition}
-                    onChange={(e) => setCameraPosition(e.target.value)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Camera look-at:&nbsp;</td>
-                <td>
-                  <input
-                    type="text"
-                    className="viewer-text-input"
-                    style={{ width: '120px' }}
-                    value={cameraLookAt}
-                    onChange={(e) => setCameraLookAt(e.target.value)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>SH level:</td>
-                <td>
-                  <input
-                    type="text"
-                    className="viewer-text-input"
-                    style={{ width: '60px' }}
-                    value={sphericalHarmonicsDegree}
-                    onChange={(e) => setSphericalHarmonicsDegree(parseInt(e.target.value) || 0)}
-                  />
-                  <span className="viewer-valid-label">(0, 1, or 2)</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <br />
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <span className="viewer-button" onClick={handleView} style={{ flex: 1, textAlign: 'center' }}>
-              View
-            </span>
-            <span className="viewer-button viewer-button-secondary" onClick={handleReset} style={{ flex: 1, textAlign: 'center' }}>
-              Reset
-            </span>
-          </div>
-          <br />
-          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', marginTop: '16px' }}>
-            <div style={{ width: '50px' }}>
-              {loading && <div className="viewer-loading-icon"></div>}
-            </div>
-            <div style={{ textAlign: 'left', color: 'var(--text)', marginTop: '7px', marginLeft: '15px', flex: 1 }}>
-              {viewStatus}
-            </div>
-          </div>
-          {viewError && <span style={{ color: '#ff4444', fontSize: '13px' }}>{viewError}</span>}
+    <div className="viewer-container" ref={containerRef}>
+      {/* UI Layer fica SOBRE o canvas que o Viewer injeta */}
+      <div className="viewer-ui-layer">
+        
+        <div className="viewer-top-bar">
+          <button className="viewer-back-btn" onClick={handleReset}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Voltar</span>
+          </button>
+          <ThemeToggle />
         </div>
 
-        <div className="viewer-panel">
-          <div className="viewer-small-title">Mouse input</div>
-          <div style={{ textAlign: 'left', marginBottom: '24px' }}>
-            <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--gray)' }}>
-              <li style={{ marginBottom: '8px' }}>Left click to set the focal point</li>
-              <li style={{ marginBottom: '8px' }}>Left click and drag to orbit</li>
-              <li style={{ marginBottom: '8px' }}>Right click and drag to pan</li>
-              <li>Scroll to zoom in/out</li>
-            </ul>
+        <button 
+          className="viewer-toggle-sidebar-btn" 
+          onClick={() => setShowControls(!showControls)}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+
+        <div className={`viewer-controls-sidebar ${!showControls ? 'collapsed' : ''}`}>
+          <div className="viewer-sidebar-header">
+            <h3 className="viewer-sidebar-title">Controles 3DGS</h3>
           </div>
-          <div className="viewer-small-title">Keyboard input</div>
-          <div style={{ height: '12px' }}></div>
-          <table style={{ width: '100%' }}>
-            <tbody>
-              <tr>
-                <td style={{ width: '50px' }}><div className="viewer-control-key">I</div></td>
-                <td className="viewer-control-desc">Display debug info panel</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">C</div></td>
-                <td className="viewer-control-desc">Toggle mesh cursor</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">U</div></td>
-                <td className="viewer-control-desc">Toggle controls orientation marker</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key" style={{ fontSize: '14pt', fontWeight: 'bold' }}>←</div></td>
-                <td className="viewer-control-desc">Rotate camera-up counter-clockwise</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key" style={{ fontSize: '14pt', fontWeight: 'bold' }}>→</div></td>
-                <td className="viewer-control-desc">Rotate camera-up clockwise</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">P</div></td>
-                <td className="viewer-control-desc">Toggle point-cloud mode</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">O</div></td>
-                <td className="viewer-control-desc">Toggle orthographic mode</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">=</div></td>
-                <td className="viewer-control-desc">Increase splat scale</td>
-              </tr>
-              <tr><td colSpan="2" style={{ height: '8px' }}></td></tr>
-              <tr>
-                <td><div className="viewer-control-key">-</div></td>
-                <td className="viewer-control-desc">Decrease splat scale</td>
-              </tr>
-            </tbody>
-          </table>
+
+          <div className="viewer-sidebar-content">
+            <div className="viewer-control-group">
+              <span className="viewer-control-label">Arquivo</span>
+              <div className="viewer-file-upload-box" onClick={() => fileInputRef.current.click()}>
+                {fileName}
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{display:'none'}} accept=".ply,.splat,.ksplat" />
+            </div>
+
+            <div className="viewer-control-group">
+              <span className="viewer-control-label">Modo</span>
+              <label className="viewer-checkbox-row">
+                <input type="checkbox" checked={antialiased} onChange={e => setAntialiased(e.target.checked)} />
+                <span>Anti-aliased</span>
+              </label>
+              <label className="viewer-checkbox-row">
+                <input type="checkbox" checked={scene2D} onChange={e => setScene2D(e.target.checked)} />
+                <span>Modo 2D</span>
+              </label>
+            </div>
+
+            <div className="viewer-control-group">
+                <span className="viewer-control-label">Alpha Threshold</span>
+                <input type="number" className="viewer-input-field" value={alphaRemovalThreshold} onChange={e => setAlphaRemovalThreshold(parseInt(e.target.value))} />
+            </div>
+
+            <div className="viewer-control-group">
+                <span className="viewer-control-label">Câmera (Pos / Look / Up)</span>
+                <input type="text" className="viewer-input-field" placeholder="0, 10, 15" value={cameraPosition} onChange={e => setCameraPosition(e.target.value)} style={{marginBottom:4}}/>
+                <input type="text" className="viewer-input-field" placeholder="0, 0, 0" value={cameraLookAt} onChange={e => setCameraLookAt(e.target.value)} style={{marginBottom:4}}/>
+                <input type="text" className="viewer-input-field" placeholder="0, 1, 0" value={cameraUp} onChange={e => setCameraUp(e.target.value)} />
+            </div>
+
+            <button className="viewer-btn-primary" onClick={handleView}>
+              Carregar Cena
+            </button>
+
+            <div className="viewer-shortcuts-section">
+                <span className="viewer-control-label" style={{display:'block', marginBottom:'8px'}}>Atalhos</span>
+                <div className="viewer-shortcut-item"><span>Mouse Esq</span><span>Orbitar</span></div>
+                <div className="viewer-shortcut-item"><span>Mouse Dir</span><span>Pan</span></div>
+                <div className="viewer-shortcut-item"><span>Scroll</span><span>Zoom</span></div>
+                <div className="viewer-shortcut-item"><span>Click Duplo</span><span>Focar</span></div>
+                <div className="viewer-shortcut-item"><span>I</span><span>Info</span></div>
+            </div>
+          </div>
         </div>
+
+        {loading && (
+          <div className="viewer-loading-overlay">
+            <div className="viewer-spinner"></div>
+            <span>{statusMsg}</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default Viewer3DGS;
-
